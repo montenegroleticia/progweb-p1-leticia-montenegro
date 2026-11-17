@@ -27,3 +27,23 @@ db.exec(`
                 CHECK (status IN ('agendada', 'confirmada', 'cancelada'))
   );
 `);
+
+// Dados de exemplo (fictícios): só entram se o banco estiver vazio.
+// No Render grátis o arquivo some a cada reinício; assim a demo nunca abre vazia.
+const { total } = db.prepare('SELECT COUNT(*) AS total FROM pacientes').get();
+if (total === 0) {
+  const inserirPaciente = db.prepare(
+    'INSERT INTO pacientes (nome, email, telefone) VALUES (?, ?, ?)',
+  );
+  const inserirConsulta = db.prepare(
+    'INSERT INTO consultas (paciente_id, data_hora, motivo, status) VALUES (?, ?, ?, ?)',
+  );
+
+  const ana = inserirPaciente.run('Ana Exemplo', 'ana@exemplo.com', '(83) 90000-0001').lastInsertRowid;
+  const bruno = inserirPaciente.run('Bruno Exemplo', 'bruno@exemplo.com', null).lastInsertRowid;
+  inserirPaciente.run('Carla Exemplo', 'carla@exemplo.com', '(83) 90000-0003');
+
+  inserirConsulta.run(ana, '2026-12-01T09:00', 'Consulta de rotina', 'confirmada');
+  inserirConsulta.run(ana, '2026-12-15T14:30', 'Retorno com exames', 'agendada');
+  inserirConsulta.run(bruno, '2026-12-03T10:00', 'Dor nas costas', 'agendada');
+}
