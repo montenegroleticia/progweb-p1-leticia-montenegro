@@ -1,4 +1,5 @@
 import { clienteModel } from '../models/clienteModel.js';
+import { contaModel } from '../models/contaModel.js';
 import { erro } from '../utils/erro.js';
 
 export const clienteService = {
@@ -21,12 +22,21 @@ export const clienteService = {
   },
 
   atualizar(id, dados = {}) {
+    // Desafio (S5): o CPF novo não pode pertencer a OUTRO cliente
+    if (dados.cpf) {
+      const dono = clienteModel.buscarPorCpf(dados.cpf);
+      if (dono && dono.id !== id) throw erro(409, 'Já existe um cliente com este CPF');
+    }
     const atualizado = clienteModel.atualizar(id, dados);
     if (!atualizado) throw erro(404, 'Cliente não encontrado');
     return atualizado;
   },
 
   remover(id) {
+    // Regra nova (S5): cliente com contas não pode ser removido
+    if (contaModel.listarPorCliente(id).length > 0) {
+      throw erro(409, 'Cliente possui contas. Remova as contas primeiro.');
+    }
     const removido = clienteModel.remover(id);
     if (!removido) throw erro(404, 'Cliente não encontrado');
   },
