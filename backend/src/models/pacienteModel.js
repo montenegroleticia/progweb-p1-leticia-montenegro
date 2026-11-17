@@ -1,36 +1,38 @@
-// "Banco de dados" em memória: um array. Na S5 vira SQLite.
-let pacientes = [];
-let proximoId = 1;
+import { db } from '../db.js';
 
+// Mesmo contrato da S3 (listar, buscarPorId, buscarPorEmail, inserir,
+// atualizar, remover). Só o "como" mudou: o array virou tabela.
 export const pacienteModel = {
   listar() {
-    return pacientes;
+    return db.prepare('SELECT * FROM pacientes ORDER BY id').all();
   },
 
   buscarPorId(id) {
-    return pacientes.find((p) => p.id === id) ?? null;
+    return db.prepare('SELECT * FROM pacientes WHERE id = ?').get(id) ?? null;
   },
 
   buscarPorEmail(email) {
-    return pacientes.find((p) => p.email === email) ?? null;
+    return db.prepare('SELECT * FROM pacientes WHERE email = ?').get(email) ?? null;
   },
 
   inserir({ nome, email, telefone }) {
-    const novo = { id: proximoId++, nome, email, telefone: telefone ?? null };
-    pacientes.push(novo);
-    return novo;
+    const r = db
+      .prepare('INSERT INTO pacientes (nome, email, telefone) VALUES (?, ?, ?)')
+      .run(nome, email, telefone ?? null);
+    return this.buscarPorId(r.lastInsertRowid);
   },
 
   atualizar(id, dados) {
-    const i = pacientes.findIndex((p) => p.id === id);
-    if (i === -1) return null;
-    pacientes[i] = { ...pacientes[i], ...dados, id }; // o id nunca muda
-    return pacientes[i];
+    const atual = this.buscarPorId(id);
+    if (!atual) return null;
+    const novo = { ...atual, ...dados };
+    db.prepare('UPDATE pacientes SET nome = ?, email = ?, telefone = ? WHERE id = ?')
+      .run(novo.nome, novo.email, novo.telefone ?? null, id); // o id nunca muda
+    return this.buscarPorId(id);
   },
 
   remover(id) {
-    const antes = pacientes.length;
-    pacientes = pacientes.filter((p) => p.id !== id);
-    return pacientes.length < antes; // true = removeu
+    const r = db.prepare('DELETE FROM pacientes WHERE id = ?').run(id);
+    return r.changes > 0; // true = removeu
   },
 };
