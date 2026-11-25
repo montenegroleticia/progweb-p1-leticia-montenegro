@@ -3,8 +3,8 @@
 Sistema para uma clínica organizar seus pacientes e as consultas de cada um: cadastro, agendamento, confirmação e cancelamento.
 Projeto 1 da disciplina Programação Web (UEPB, 2026.2) · Prof. Rodrigo Alves Costa.
 
-- **Aplicação:** _(link da Vercel — etapa 6)_
-- **API:** _(link do Render — etapa 5)_
+- **Aplicação:** https://p1-leticia-clinica.vercel.app
+- **API:** https://p1-leticia-clinica-api.onrender.com
 - **Vídeo de apresentação:** _(link — etapa 8)_
 
 > A API está no plano grátis do Render: o primeiro acesso pode levar cerca de
